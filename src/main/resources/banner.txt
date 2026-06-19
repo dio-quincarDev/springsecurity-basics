@@ -1,0 +1,23 @@
+${AnsiColor.BRIGHT_CYAN}
+   █████╗ ██╗   ██╗████████╗██╗  ██╗
+  ██╔══██╗██║   ██║╚══██╔══╝██║  ██║
+  ███████║██║   ██║   ██║   ███████║
+  ██╔══██║██║   ██║   ██║   ██╔══██║
+  ██║  ██║╚██████╔╝   ██║   ██║  ██║
+  ╚═╝  ╚═╝ ╚═════╝    ╚═╝   ╚═╝  ╚═╝
+
+  ██████╗  ██████╗ ██████╗ ██████╗ ███████╗    ███████╗██╗   ██╗███████╗████████╗███████╗███╗   ███╗
+  ██╔═══██╗██╔════╝██╔═══██╗██╔══██╗██╔════╝    ██╔════╝╚██╗ ██╔╝██╔════╝╚══██╔══╝██╔════╝████╗ ████║
+  ██║   ██║██║     ██║   ██║██████╔╝█████╗      ███████╗ ╚████╔╝ ███████╗   ██║   █████╗  ██╔████╔██║
+  ██║▄▄ ██║██║     ██║   ██║██╔══██╗██╔══╝      ╚════██║  ╚██╔╝  ╚════██║   ██║   ██╔══╝  ██║╚██╔╝██║
+  ╚██████╔╝╚██████╗╚██████╔╝██║  ██║███████╗    ███████║   ██║   ███████║   ██║   ███████╗██║ ╚═╝ ██║
+   ╚══▀▀═╝  ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝    ╚══════╝   ╚═╝   ╚══════╝   ╚═╝   ╚══════╝╚═╝     ╚═╝
+
+${AnsiColor.BRIGHT_WHITE}        AUTH SERVICE [SECURITY CORE]
+${AnsiColor.DEFAULT}
+
+${AnsiColor.BRIGHT_MAGENTA}App:${AnsiColor.DEFAULT} ${spring.application.name}
+${AnsiColor.BRIGHT_MAGENTA}Profile:${AnsiColor.DEFAULT} ${spring.profiles.active:default}
+${AnsiColor.BRIGHT_MAGENTA}Port:${AnsiColor.DEFAULT} ${server.port}
+${AnsiColor.BRIGHT_GREEN}STATUS: LOCKED & PROTECTED
+${AnsiColor.DEFAULT}

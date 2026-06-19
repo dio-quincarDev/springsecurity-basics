@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: auth
+  profiles:
+    active: ${ACTIVE_PROFILE:dev}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+
+server:
+  port: ${PORT:8080}
+
+springdoc:
+  swagger-ui:
+    operations-sorter: method
+    doc-expansion: none
