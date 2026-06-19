@@ -15,36 +15,36 @@ graph TB
 
     subgraph FILTER_CHAIN["CADENA DE FILTROS DE SEGURIDAD"]
         direction LR
-        CSRF["CSRF<br/><i>Desactivado — API REST stateless</i>"]
-        SESSION["Sesiones<br/><i>STATELESS — sin cookies</i>"]
-        JWT_FILTER["JwtAuthFilter<br/><i>OncePerRequestFilter</i><br/>Extrae · Valida · Autentica"]
+        CSRF["CSRF — Desactivado — API REST stateless"]
+        SESSION["Sesiones — STATELESS — sin cookies"]
+        JWT_FILTER["JwtAuthFilter — OncePerRequestFilter — Extrae · Valida · Autentica"]
     end
 
     subgraph SECURITY_CONFIG["CONFIGURACIÓN"]
-        SC["SecurityFilterChain<br/><i>SecurityConfig.java:33-65</i>"]
-        AUTH_PROVIDER["DaoAuthenticationProvider<br/><i>UserDetailsService + BCrypt</i>"]
-        AUTH_MANAGER["AuthenticationManager<br/><i>Orquesta la autenticación</i>"]
+        SC["SecurityFilterChain — SecurityConfig.java:33-65"]
+        AUTH_PROVIDER["DaoAuthenticationProvider — UserDetailsService + BCrypt"]
+        AUTH_MANAGER["AuthenticationManager — Orquesta la autenticación"]
     end
 
     subgraph CONTROLLER["CAPA CONTROLLER"]
-        CTRL["AuthApiController<br/><i>POST /register · /login · /validate<br/>GET /users</i>"]
+        CTRL["AuthApiController — POST /register · /login · /validate · GET /users"]
     end
 
     subgraph SERVICE["CAPA SERVICE"]
-        AUTH_SVC["AuthServiceImpl<br/><i>· @PreAuthorize('hasRole(ADMIN)')<br/>· BCrypt · Login · Validación</i>"]
-        JWT_SVC["JwtServiceImpl<br/><i>· generateToken() — HMAC-SHA<br/>· validateToken() — firma + expiración<br/>· extractEmail() / extractRole()</i>"]
+        AUTH_SVC["AuthServiceImpl — @PreAuthorize('hasRole(ADMIN)') · BCrypt · Login · Validación"]
+        JWT_SVC["JwtServiceImpl — generateToken() HMAC-SHA · validateToken() firma + expiración · extractEmail() / extractRole()"]
     end
 
     subgraph REPOSITORY["CAPA REPOSITORY"]
-        REPO["UserEntityRepository<br/><i>Spring Data JPA — findByEmail()</i>"]
+        REPO["UserEntityRepository — Spring Data JPA — findByEmail()"]
     end
 
     subgraph DATABASE["BASE DE DATOS"]
-        DB["PostgreSQL<br/><i>Tabla: users (UUID, email, password, role)</i>"]
+        DB["PostgreSQL — users (UUID, email, password, role)"]
     end
 
     subgraph EXCEPTIONS["MANEJO DE ERRORES"]
-        GEX["GlobalExceptionHandler<br/><i>401 · 403 · 409 · 400</i>"]
+        GEX["GlobalExceptionHandler — 401 · 403 · 409 · 400"]
     end
 
     C -->|"HTTP Request"| FILTER_CHAIN
@@ -60,14 +60,14 @@ graph TB
     AUTH_SVC -.->|"excepciones"| GEX
     AUTH_SVC -.->|"credenciales inválidas"| GEX
 
-    style CLIENT fill:#e3f2fd,stroke:#1565c0,color:#0d47a1
-    style FILTER_CHAIN fill:#fff3e0,stroke:#e65100,color:#bf360c
-    style SECURITY_CONFIG fill:#fce4ec,stroke:#c62828,color:#b71c1c
-    style CONTROLLER fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20
-    style SERVICE fill:#f3e5f5,stroke:#6a1b9a,color:#4a148c
-    style REPOSITORY fill:#fff8e1,stroke:#f57f17,color:#e65100
-    style DATABASE fill:#eceff1,stroke:#37474f,color:#263238
-    style EXCEPTIONS fill:#ffebee,stroke:#c62828,color:#b71c1c
+    style CLIENT fill:#1565c0,stroke:#0d47a1,color:#ffffff
+    style FILTER_CHAIN fill:#e65100,stroke:#bf360c,color:#ffffff
+    style SECURITY_CONFIG fill:#c62828,stroke:#b71c1c,color:#ffffff
+    style CONTROLLER fill:#2e7d32,stroke:#1b5e20,color:#ffffff
+    style SERVICE fill:#6a1b9a,stroke:#4a148c,color:#ffffff
+    style REPOSITORY fill:#f57f17,stroke:#e65100,color:#ffffff
+    style DATABASE fill:#37474f,stroke:#263238,color:#ffffff
+    style EXCEPTIONS fill:#b71c1c,stroke:#880e0e,color:#ffffff
 ```
 
 ---
@@ -86,7 +86,7 @@ sequenceDiagram
     participant BC as BCrypt
     participant JWT as JwtServiceImpl
 
-    C->>+CTRL: POST /api/auth/login<br/>{email, password}
+    C->>+CTRL: POST /api/auth/login {email, password}
     CTRL->>+AUTH: login(LoginRequest)
     AUTH->>+AM: authenticate(UsernamePasswordAuthenticationToken)
     AM->>+UDS: loadUserByUsername(email)
@@ -98,10 +98,10 @@ sequenceDiagram
     AM-->>-AUTH: Authentication (UserDetails)
     AUTH->>AUTH: (UserEntity) authentication.getPrincipal()
     AUTH->>+JWT: generateToken(email, userId, username, role)
-    JWT->>JWT: Construir JWT con claims<br/>{sub, userId, username, role}<br/>+ firma HMAC-SHA
+    JWT->>JWT: Construir JWT con claims {sub, userId, username, role} + firma HMAC-SHA
     JWT-->>-AUTH: TokenResponse
     AUTH-->>-CTRL: TokenResponse
-    CTRL-->>-C: 200 OK<br/>{token, tokenType: "Bearer",<br/>expiresIn: 3600, userId}
+    CTRL-->>-C: 200 OK {token, tokenType: "Bearer", expiresIn: 3600, userId}
 ```
 
 > **Flujo de error:** Si las credenciales son incorrectas, `AuthenticationManager` lanza `BadCredentialsException` que `GlobalExceptionHandler` convierte en **401 UNAUTHORIZED** `{error: "INVALID_CREDENTIALS"}`.
@@ -123,7 +123,7 @@ sequenceDiagram
     participant REPO as UserEntityRepository
     participant DB as PostgreSQL
 
-    C->>+CTRL: POST /api/auth/register<br/>{username, email, password}
+    C->>+CTRL: POST /api/auth/register {username, email, password}
     CTRL->>+AUTH: createUser(RegisterRequest)
     AUTH->>+REPO: findByEmail(email)
     REPO-->>-AUTH: Optional.empty()
@@ -131,13 +131,13 @@ sequenceDiagram
     MAPPER-->>-AUTH: UserEntity (role = USER)
     AUTH->>+BC: encode(password)
     BC-->>-AUTH: "$2a$10$..." (hash)
-    AUTH->>AUTH: setPassword(encodedPassword)<br/>setCreatedAt(now)
+    AUTH->>AUTH: setPassword(encodedPassword) · setCreatedAt(now)
     AUTH->>+REPO: save(UserEntity)
     REPO->>+DB: INSERT INTO users
     DB-->>-REPO: UserEntity (with UUID)
     REPO-->>-AUTH: UserEntity
     AUTH-->>-CTRL: RegisterResponse
-    CTRL-->>-C: 201 CREATED<br/>{id, username, email,<br/>role: "USER", createdAt}
+    CTRL-->>-C: 201 CREATED {id, username, email, role: "USER", createdAt}
 ```
 
 > **Flujo de error:** Si el email ya existe, `findByEmail` devuelve `Optional.of(user)` y el servicio lanza `DuplicateEmailException` que `GlobalExceptionHandler` convierte en **409 CONFLICT** `{error: "USER_ALREADY_EXISTS"}`.
@@ -150,46 +150,46 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    START(["Request HTTP entrante"]) --> CHECK_HEADER{"¿Tiene header<br/>Authorization?"}
+    START(["Request HTTP entrante"]) --> CHECK_HEADER{"¿Tiene header Authorization?"}
 
-    CHECK_HEADER -->|"NO"| PASS1["doFilter()<br/><i>Sin autenticar — pasa al siguiente filtro</i>"]
-    CHECK_HEADER -->|"SI"| CHECK_BEARER{"¿Empieza con<br/>Bearer ?"}
+    CHECK_HEADER -->|"NO"| PASS1["doFilter() — Sin autenticar — pasa al siguiente filtro"]
+    CHECK_HEADER -->|"SI"| CHECK_BEARER{"¿Empieza con Bearer ?"}
 
-    CHECK_BEARER -->|"NO"| PASS2["doFilter()<br/><i>No es JWT — permite rutas públicas</i>"]
-    CHECK_BEARER -->|"SI"| EXTRACT["Extraer token<br/><i>Quitar prefijo 'Bearer '</i>"]
+    CHECK_BEARER -->|"NO"| PASS2["doFilter() — No es JWT — permite rutas públicas"]
+    CHECK_BEARER -->|"SI"| EXTRACT["Extraer token — Quitar prefijo 'Bearer '"]
 
-    EXTRACT --> PARSE["jwtService.extractEmail(token)<br/><i>JwtServiceImpl.java:139-147</i>"]
-    PARSE -->|"Excepción<br/><i>Firma inválida / malformado</i>"| LOG_WARN["log.warn('Token JWT inválido')"]
-    LOG_WARN --> PASS3["doFilter()<br/><i>Token corrupto — sin autenticar</i>"]
+    EXTRACT --> PARSE["jwtService.extractEmail(token) — JwtServiceImpl.java:139-147"]
+    PARSE -->|"Excepción — Firma inválida / malformado"| LOG_WARN["log.warn('Token JWT inválido')"]
+    LOG_WARN --> PASS3["doFilter() — Token corrupto — sin autenticar"]
 
-    PARSE -->|"email válido"| CHECK_CTX{"¿Ya hay autenticación<br/>en SecurityContext?"}
+    PARSE -->|"email válido"| CHECK_CTX{"¿Ya hay autenticación en SecurityContext?"}
 
-    CHECK_CTX -->|"SI — ya autenticado"| PASS4["doFilter()<br/><i>No sobreescribe autenticación existente</i>"]
-    CHECK_CTX -->|"NO"| LOAD_USER["loadUserByUsername(email)<br/><i>CustomUserDetailsService.java:19-25</i><br/>Busca usuario en BD"]
+    CHECK_CTX -->|"SI — ya autenticado"| PASS4["doFilter() — No sobreescribe autenticación existente"]
+    CHECK_CTX -->|"NO"| LOAD_USER["loadUserByUsername(email) — CustomUserDetailsService.java:19-25 — Busca usuario en BD"]
 
-    LOAD_USER --> CHECK_EXPIRED{"¿jwtService.isExpired(token)?<br/><i>JwtServiceImpl.java:128-137</i>"}
+    LOAD_USER --> CHECK_EXPIRED{"¿jwtService.isExpired(token)? — JwtServiceImpl.java:128-137"}
 
-    CHECK_EXPIRED -->|"SI — token expirado"| PASS5["doFilter()<br/><i>Token caducado — sin autenticar</i>"]
-    CHECK_EXPIRED -->|"NO — token válido"| CREATE_AUTH["Crear UsernamePasswordAuthenticationToken<br/><i>principal = userDetails<br/>credentials = null (JWT ya validado)<br/>authorities = roles del usuario</i>"]
+    CHECK_EXPIRED -->|"SI — token expirado"| PASS5["doFilter() — Token caducado — sin autenticar"]
+    CHECK_EXPIRED -->|"NO — token válido"| CREATE_AUTH["Crear UsernamePasswordAuthenticationToken — principal = userDetails — credentials = null (JWT ya validado) — authorities = roles del usuario"]
 
-    CREATE_AUTH --> SET_DETAILS["setDetails(request)<br/><i>IP, sesión, etc.</i>"]
-    SET_DETAILS --> SET_CTX["SecurityContextHolder<br/>.setAuthentication(authToken)<br/><i>Spring Security 'sabe' quién es el usuario</i>"]
-    SET_CTX --> PASS6["doFilter()<br/><i>Request autenticada — llega al controller</i>"]
+    CREATE_AUTH --> SET_DETAILS["setDetails(request) — IP, sesión, etc."]
+    SET_DETAILS --> SET_CTX["SecurityContextHolder.setAuthentication(authToken) — Spring Security 'sabe' quién es el usuario"]
+    SET_CTX --> PASS6["doFilter() — Request autenticada — llega al controller"]
 
-    style START fill:#e3f2fd,stroke:#1565c0,color:#0d47a1
-    style CHECK_HEADER fill:#fff3e0,stroke:#e65100,color:#bf360c
-    style CHECK_BEARER fill:#fff3e0,stroke:#e65100,color:#bf360c
-    style CHECK_CTX fill:#fff3e0,stroke:#e65100,color:#bf360c
-    style CHECK_EXPIRED fill:#fff3e0,stroke:#e65100,color:#bf360c
-    style CREATE_AUTH fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20
-    style SET_CTX fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20
-    style LOG_WARN fill:#ffebee,stroke:#c62828,color:#b71c1c
-    style PASS1 fill:#eceff1,stroke:#37474f,color:#263238
-    style PASS2 fill:#eceff1,stroke:#37474f,color:#263238
-    style PASS3 fill:#eceff1,stroke:#37474f,color:#263238
-    style PASS4 fill:#eceff1,stroke:#37474f,color:#263238
-    style PASS5 fill:#eceff1,stroke:#37474f,color:#263238
-    style PASS6 fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20
+    style START fill:#1565c0,stroke:#0d47a1,color:#ffffff
+    style CHECK_HEADER fill:#e65100,stroke:#bf360c,color:#ffffff
+    style CHECK_BEARER fill:#e65100,stroke:#bf360c,color:#ffffff
+    style CHECK_CTX fill:#e65100,stroke:#bf360c,color:#ffffff
+    style CHECK_EXPIRED fill:#e65100,stroke:#bf360c,color:#ffffff
+    style CREATE_AUTH fill:#2e7d32,stroke:#1b5e20,color:#ffffff
+    style SET_CTX fill:#2e7d32,stroke:#1b5e20,color:#ffffff
+    style LOG_WARN fill:#b71c1c,stroke:#880e0e,color:#ffffff
+    style PASS1 fill:#546e7a,stroke:#37474f,color:#ffffff
+    style PASS2 fill:#546e7a,stroke:#37474f,color:#ffffff
+    style PASS3 fill:#546e7a,stroke:#37474f,color:#ffffff
+    style PASS4 fill:#546e7a,stroke:#37474f,color:#ffffff
+    style PASS5 fill:#546e7a,stroke:#37474f,color:#ffffff
+    style PASS6 fill:#2e7d32,stroke:#1b5e20,color:#ffffff
 ```
 
 > **Referencia:** `JwtAuthFilter.java:38-98` — Las 8 secciones numeradas del código
@@ -210,7 +210,7 @@ sequenceDiagram
     participant AUTH_SVC as AuthServiceImpl
     participant ANNO as @PreAuthorize
 
-    C->>+FILTER: GET /api/auth/users<br/>Header: Authorization: Bearer eyJhb...
+    C->>+FILTER: GET /api/auth/users Header: Authorization: Bearer eyJhb...
     FILTER->>FILTER: 1. Extraer header Authorization
     FILTER->>FILTER: 2. ¿Empieza con "Bearer "? → SI
     FILTER->>FILTER: 3. Extraer token JWT
@@ -222,16 +222,16 @@ sequenceDiagram
     JWT_SVC-->>-FILTER: false
     FILTER->>FILTER: Crear UsernamePasswordAuthenticationToken
     FILTER->>+CTX: setAuthentication(authToken)
-    Note over CTX: SecurityContextHolder ahora<br/>sabe que el usuario es USER
+    Note over CTX: SecurityContextHolder ahora sabe que el usuario es USER
     FILTER-->>-FILTER: doFilter()
     FILTER->>+CTRL: GET /api/auth/users
     CTRL->>+AUTH_SVC: listUsers()
     AUTH_SVC->>+ANNO: Verificar @PreAuthorize("hasRole('ADMIN')")
-    Note over ANNO: authorities = [ROLE_USER]<br/>¿Tiene ROLE_ADMIN?
+    Note over ANNO: authorities = [ROLE_USER] ¿Tiene ROLE_ADMIN?
     ANNO-->>-AUTH_SVC: Autorizado (USER no tiene ADMIN)
     AUTH_SVC->>AUTH_SVC: repository.findAll()
     AUTH_SVC-->>-CTRL: List of UserSummary
-    CTRL-->>-C: 200 OK<br/>[{id, username, email, role}]
+    CTRL-->>-C: 200 OK [{id, username, email, role}]
 ```
 
 > **Flujo de error:** Si el usuario tiene rol USER, `@PreAuthorize` lanza `AccessDeniedException` que `GlobalExceptionHandler` convierte en **403 FORBIDDEN** `{error: "ACCESS_DENIED"}`. Si no tiene token, retorna **401 UNAUTHORIZED**.
@@ -245,23 +245,22 @@ sequenceDiagram
 ```mermaid
 graph LR
     subgraph UNIT["TESTS UNITARIOS (sin contexto Spring)"]
-        T1["CustomUserDetailsServiceTest<br/><i>2 tests</i>"]
-        T2["JwtAuthFilterTest<br/><i>8 tests</i>"]
-        T3["JwtServiceImplTest<br/><i>11 tests</i>"]
-        T4["AuthServiceImplTest<br/><i>6 tests</i>"]
-        T5["GlobalExceptionHandlerTest<br/><i>6 tests</i>"]
-        T6["AuthApiControllerTest<br/><i>5 tests</i>"]
-        T7["UserEntityTest<br/><i>2 tests</i>"]
+        T1["CustomUserDetailsServiceTest — 2 tests"]
+        T2["JwtAuthFilterTest — 8 tests"]
+        T3["JwtServiceImplTest — 11 tests"]
+        T4["AuthServiceImplTest — 6 tests"]
+        T5["GlobalExceptionHandlerTest — 6 tests"]
+        T6["AuthApiControllerTest — 5 tests"]
+        T7["UserEntityTest — 2 tests"]
     end
 
-    subgraph INTEGRATION["TESTS DE INTEGRACIÓN (contexto Spring)"
-]
-        T8["AuthApplicationTests<br/><i>1 test — smoke test</i>"]
-        T9["AuthServiceMethodSecurityTest<br/><i>2 tests — @WithMockUser</i>"]
+    subgraph INTEGRATION["TESTS DE INTEGRACIÓN (contexto Spring)"]
+        T8["AuthApplicationTests — 1 test — smoke test"]
+        T9["AuthServiceMethodSecurityTest — 2 tests — @WithMockUser"]
     end
 
     subgraph SLICE["TESTS DE REPOSITORIO (data slice)"]
-        T10["UserEntityRepositoryTest<br/><i>3 tests — H2 in-memory</i>"]
+        T10["UserEntityRepositoryTest — 3 tests — H2 in-memory"]
     end
 
     subgraph COMPONENTS["COMPONENTES CUBIERTOS"]
@@ -289,10 +288,10 @@ graph LR
     T9 --> C9
     T10 --> C10
 
-    style UNIT fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20
-    style INTEGRATION fill:#fff8e1,stroke:#f57f17,color:#e65100
-    style SLICE fill:#e3f2fd,stroke:#1565c0,color:#0d47a1
-    style COMPONENTS fill:#f3e5f5,stroke:#6a1b9a,color:#4a148c
+    style UNIT fill:#2e7d32,stroke:#1b5e20,color:#ffffff
+    style INTEGRATION fill:#f57f17,stroke:#e65100,color:#ffffff
+    style SLICE fill:#1565c0,stroke:#0d47a1,color:#ffffff
+    style COMPONENTS fill:#6a1b9a,stroke:#4a148c,color:#ffffff
 ```
 
 ### Resumen de Cobertura
@@ -330,26 +329,26 @@ graph LR
 
 ```mermaid
 flowchart TD
-    START(["¿Qué necesitas hacer?"]) --> Q1{"¿Ya tienes<br/>una cuenta?"}
+    START(["¿Qué necesitas hacer?"]) --> Q1{"¿Ya tienes una cuenta?"}
 
-    Q1 -->|"NO"| REG["POST /register<br/><i>Crea cuenta → devuelve id, username, email</i>"]
-    Q1 -->|"SI"| Q2{"¿Tienes un<br/>token JWT?"}
+    Q1 -->|"NO"| REG["POST /register — Crea cuenta → devuelve id, username, email"]
+    Q1 -->|"SI"| Q2{"¿Tienes un token JWT?"}
 
-    Q2 -->|"NO"| LOGIN["POST /login<br/><i>email + password → devuelve token</i>"]
-    Q2 -->|"SI"| Q3{"¿Qué quieres<br/>hacer con el token?"}
+    Q2 -->|"NO"| LOGIN["POST /login — email + password → devuelve token"]
+    Q2 -->|"SI"| Q3{"¿Qué quieres hacer con el token?"}
 
-    Q3 -->|"Verificar si es válido"| VALIDATE["POST /validate<br/><i>Header: Authorization: Bearer token</i>"]
+    Q3 -->|"Verificar si es válido"| VALIDATE["POST /validate — Header: Authorization: Bearer token"]
     Q3 -->|"Usar para acceder a datos"| Q4{"¿Qué rol tienes?"}
 
-    Q4 -->|"USER"| INFO["Usa el token en Authorize<br/><i>Puedes validar tu token</i>"]
-    Q4 -->|"ADMIN"| USERS["GET /users<br/><i>Lista todos los usuarios</i>"]
+    Q4 -->|"USER"| INFO["Usa el token en Authorize — Puedes validar tu token"]
+    Q4 -->|"ADMIN"| USERS["GET /users — Lista todos los usuarios"]
 
-    style START fill:#e3f2fd,stroke:#1565c0,color:#0d47a1
-    style REG fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20
-    style LOGIN fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20
-    style VALIDATE fill:#fff3e0,stroke:#e65100,color:#bf360c
-    style INFO fill:#f3e5f5,stroke:#6a1b9a,color:#4a148c
-    style USERS fill:#fce4ec,stroke:#c62828,color:#b71c1c
+    style START fill:#1565c0,stroke:#0d47a1,color:#ffffff
+    style REG fill:#2e7d32,stroke:#1b5e20,color:#ffffff
+    style LOGIN fill:#2e7d32,stroke:#1b5e20,color:#ffffff
+    style VALIDATE fill:#e65100,stroke:#bf360c,color:#ffffff
+    style INFO fill:#6a1b9a,stroke:#4a148c,color:#ffffff
+    style USERS fill:#c62828,stroke:#b71c1c,color:#ffffff
 ```
 
 ---
@@ -360,7 +359,7 @@ flowchart TD
 graph TB
     subgraph DEV["DEV (default)"]
         D1["PostgreSQL local"]
-        D2["JWT secret: hardcoded<br/><i>dev-secret-key-cambiar-en-produccion</i>"]
+        D2["JWT secret: hardcoded — dev-secret-key-cambiar-en-produccion"]
         D3["Swagger: HABILITADO OK"]
         D4["Actuator: health + info"]
         D5["Logging: DEBUG"]
@@ -385,9 +384,9 @@ graph TB
     DEV -.->|"deploy"| STG
     STG -.->|"deploy"| PROD
 
-    style DEV fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20
-    style STG fill:#fff8e1,stroke:#f57f17,color:#e65100
-    style PROD fill:#ffebee,stroke:#c62828,color:#b71c1c
+    style DEV fill:#2e7d32,stroke:#1b5e20,color:#ffffff
+    style STG fill:#f57f17,stroke:#e65100,color:#ffffff
+    style PROD fill:#c62828,stroke:#b71c1c,color:#ffffff
 ```
 
 > **Referencia:** `application-dev.yaml` · `application-stg.yaml` · `application-prod.yaml`
